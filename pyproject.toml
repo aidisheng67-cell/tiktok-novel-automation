@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tiktok-novel-automation"
+version = "0.1.0"
+description = "TikTok 小说推文自动化：AI 改文、配音、字幕、去重渲染、发布调度与数据回填"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.32,<3",
+    "Pillow>=11.0,<14",
+    "openpyxl>=3.1,<4",
+    "tzdata>=2024.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0,<10",
+]
+ai = [
+    "faster-whisper>=1.1,<2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+pythonpath = ["."]

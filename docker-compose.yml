@@ -1,0 +1,17 @@
+services:
+  app:
+    build: .
+    image: tiktok-novel-automation:local
+    environment:
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      DEEPSEEK_BASE_URL: ${DEEPSEEK_BASE_URL:-https://api.deepseek.com}
+      DEEPSEEK_MODEL: ${DEEPSEEK_MODEL:-deepseek-chat}
+      FEISHU_APP_ID: ${FEISHU_APP_ID:-}
+      FEISHU_APP_SECRET: ${FEISHU_APP_SECRET:-}
+      FEISHU_APP_TOKEN: ${FEISHU_APP_TOKEN:-}
+      FEIXING_API_KEY: ${FEIXING_API_KEY:-}
+      FEIXING_TEAM_ID: ${FEIXING_TEAM_ID:-}
+    volumes:
+      - ./config:/app/config:ro
+      - ./data:/data
+    command: ["python", "schedule_cli.py", "plan"]

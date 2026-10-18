@@ -1,0 +1,44 @@
+{
+  "app_name": "Good Novel",
+  "rewrite_mode": "hybrid",
+
+  "audio_dir": "",
+  "background_dir": "",
+  "output_dir": "",
+  "icon_dir": "",
+  "font_file": "assets/fonts/arialbd.ttf",
+
+  "per_account_videos": 3,
+  "daily_publish_cap": 21,
+  "cooldown_days": 30,
+  "videos_per_audio_min": 2,
+  "max_scripts_per_novel": 6,
+
+  "publish_timezone": "America/New_York",
+  "publish_slots": [[10, 11], [16, 17], [18, 19], [19, 20], [20, 21]],
+  "delete_after_publish": true,
+  "auto_feishu_sync": true,
+
+  "output_width": 1080,
+  "output_height": 1920,
+  "fps": 30,
+  "dedup_level": "medium",
+  "mirror_enabled": true,
+  "dedup_speed_range": [0.95, 1.05],
+  "final_crf_range": [20, 24],
+
+  "whisper_enabled": true,
+  "whisper_model": "small",
+  "whisper_language": "en",
+  "hf_endpoint": "https://hf-mirror.com",
+  "hf_disable_xet": true,
+
+  "subtitle_mode": "word",
+  "subtitle_font_name": "Arial",
+  "subtitle_word_fontsize": 120,
+  "subtitle_word_outline": 5,
+  "subtitle_pop": true,
+
+  "default_caption_template": "Search {keyword} on {app}  #novel #story #booktok #fyp",
+  "guide_template": "Search 「{keyword}」\non {app} APP {icon}\nto get the following"
+}

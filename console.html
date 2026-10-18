@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>小说推文自动化 · 控制台</title>
+<style>
+  :root{
+    --bg:#0a0e13; --panel:#101720; --sunk:#0b1118; --line:#1c2733; --line2:#151e28;
+    --ink:#d6e3ef; --muted:#6f869d; --dim:#43566a;
+    --green:#35d6a4; --amber:#ffb43f; --red:#ff5f56; --cyan:#4ec9d9;
+    --mono:ui-monospace,"Cascadia Mono",Consolas,"DejaVu Sans Mono","Microsoft YaHei",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--mono);
+       font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+  /* ── 顶栏 ── */
+  header{display:flex;align-items:center;gap:12px;padding:12px 22px;
+         border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:20}
+  header .live{width:7px;height:7px;border-radius:50%;background:var(--green);
+               box-shadow:0 0 0 3px rgba(53,214,164,.15)}
+  header h1{font-size:14px;margin:0;font-weight:600;letter-spacing:.02em}
+  header .meta{color:var(--dim);font-size:11px}
+  header .sp{flex:1}
+  .wrap{max-width:1180px;margin:0 auto;padding:20px 22px 60px}
+
+  /* ── 区块 ── */
+  section{margin-bottom:18px}
+  .sec-h{display:flex;align-items:center;gap:10px;margin:0 0 10px;
+         font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .sec-h::before{content:"▌";color:var(--green);letter-spacing:0}
+  .sec-h .sp{flex:1}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:4px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}
+
+  /* ── 状态读数 ── */
+  .readout{display:grid;grid-template-columns:repeat(3,1fr) 1.6fr;gap:1px;
+           background:var(--line2);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+  @media(max-width:760px){.readout{grid-template-columns:1fr 1fr}}
+  .cell{background:var(--panel);padding:14px 16px}
+  .cell .n{font-size:28px;font-weight:700;color:var(--amber);
+           font-variant-numeric:tabular-nums;line-height:1.1}
+  .cell .n.sm{font-size:13px;color:var(--ink);font-weight:400;padding-top:9px;line-height:1.6}
+  .cell .k{font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:.06em}
+
+  /* ── 服务状态灯 ── */
+  .svc{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px 16px}
+  .svc .top{display:flex;align-items:center;gap:9px;margin-bottom:3px}
+  .svc .name{font-size:13px;font-weight:600}
+  .svc .d{width:8px;height:8px;border-radius:50%;background:var(--dim);flex:none}
+  .svc .d.ok{background:var(--green);box-shadow:0 0 0 3px rgba(53,214,164,.15)}
+  .svc .d.bad{background:var(--red);box-shadow:0 0 0 3px rgba(255,95,86,.15)}
+  .svc .d.run{background:var(--amber);animation:pulse 1s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  .svc .s{font-size:11px;color:var(--dim);min-height:16px;
+          overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .svc .s.ok{color:var(--green)} .svc .s.bad{color:var(--red)} .svc .s.run{color:var(--amber)}
+  .svc button{margin-top:10px;width:100%}
+
+  /* ── 按钮 ── */
+  button{font-family:var(--mono);font-size:12px;cursor:pointer;border-radius:3px;
+         padding:8px 14px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);
+         transition:border-color .12s,background .12s}
+  button:hover:not(:disabled){border-color:var(--dim);background:#121b24}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button.primary{background:var(--green);color:#04231a;border-color:transparent;font-weight:700}
+  button.primary:hover:not(:disabled){filter:brightness(1.08);background:var(--green)}
+  button.run{background:var(--amber);color:#2e1e00;border-color:transparent;font-weight:700}
+  button.run:hover:not(:disabled){filter:brightness(1.08);background:var(--amber)}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap}
+
+  /* ── 表单 ── */
+  .body{padding:16px}
+  .row{margin-bottom:12px}
+  .row:last-child{margin-bottom:0}
+  .row label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;letter-spacing:.04em}
+  .row input{width:100%;background:var(--sunk);border:1px solid var(--line);border-radius:3px;
+             color:var(--ink);padding:8px 10px;font-size:12.5px;font-family:var(--mono);outline:none}
+  .row input:focus{border-color:var(--green)}
+  .row .hint{font-size:10.5px;color:var(--dim);margin-top:3px}
+  .pw{position:relative}
+  .pw button{position:absolute;right:4px;top:4px;padding:4px 8px;font-size:10px;
+             background:transparent;border:none;color:var(--dim)}
+  .pw button:hover{color:var(--ink);background:transparent}
+
+  /* ── 折叠 ── */
+  details summary{list-style:none;cursor:pointer}
+  details summary::-webkit-details-marker{display:none}
+  details .sec-h::after{content:"[+]";color:var(--dim);font-size:11px}
+  details[open] .sec-h::after{content:"[-]"}
+
+  .note{font-size:11px;color:var(--dim);margin-top:10px}
+  .note.warn{color:var(--amber)}
+
+  /* ── toast ── */
+  #toast{position:fixed;right:20px;bottom:20px;background:#0e1a22;border:1px solid var(--green);
+         border-left-width:3px;color:var(--ink);padding:11px 16px;border-radius:3px;max-width:480px;
+         display:none;white-space:pre-wrap;font-size:12px;box-shadow:0 10px 34px rgba(0,0,0,.55);z-index:50}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="live"></span>
+  <h1>小说推文自动化 · 控制台</h1>
+  <span class="meta">127.0.0.1:8770 · 仅本机</span>
+  <span class="sp"></span>
+  <button class="primary" onclick="saveAll()">保存全部设置</button>
+</header>
+
+<div class="wrap">
+
+  <!-- 状态读数 -->
+  <section>
+    <div class="sec-h">运行状态 <span class="sp"></span>
+      <button style="padding:3px 10px;font-size:11px" onclick="loadStatus()">刷新</button>
+    </div>
+    <div class="readout" id="status">
+      <div class="cell"><div class="n">—</div><div class="k">加载中…</div></div>
+    </div>
+  </section>
+
+  <!-- 服务连通性 -->
+  <section>
+    <div class="sec-h">服务连通性</div>
+    <div class="grid3">
+      <div class="svc">
+        <div class="top"><span class="d" id="dot_feishu"></span><span class="name">飞书多维表格</span></div>
+        <div class="s" id="st_feishu">未测试</div>
+        <button onclick="test('feishu')">测试连接</button>
+      </div>
+      <div class="svc">
+        <div class="top"><span class="d" id="dot_deepseek"></span><span class="name">DeepSeek 改文</span></div>
+        <div class="s" id="st_deepseek">未测试</div>
+        <button onclick="test('deepseek')">测试改文(跑一条)</button>
+      </div>
+      <div class="svc">
+        <div class="top"><span class="d" id="dot_feixing"></span><span class="name">飞星发布</span></div>
+        <div class="s" id="st_feixing">未测试</div>
+        <button onclick="test('feixing')">测试并列出账号</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 手动操作 -->
+  <section>
+    <div class="sec-h">手动操作</div>
+    <div class="panel"><div class="body">
+      <div class="btnrow">
+        <button class="run" id="btn_generate" onclick="act('generate')">▶ 立即生成(改文→配音→出片)</button>
+        <button class="run" id="btn_publish" onclick="act('publish')">▶ 立即发布</button>
+      </div>
+      <div class="note" id="runnote">正常由定时任务自动跑;此处可手动触发。</div>
+      <div class="note warn">⚠ 生成较慢(约 30–60 分钟)。运行期间按钮自动锁定,请勿关闭本页与后台窗口。</div>
+    </div></div>
+  </section>
+
+  <!-- 配置（折叠，日常不看） -->
+  <details>
+    <summary><div class="sec-h">配置 · 路径与参数</div></summary>
+    <div class="grid2">
+      <div class="panel"><div class="body">
+        <div class="sec-h" style="margin-bottom:12px">路径设置</div>
+        <div id="paths"></div>
+      </div></div>
+      <div class="panel"><div class="body">
+        <div class="sec-h" style="margin-bottom:12px">运行参数</div>
+        <div id="params"></div>
+      </div></div>
+    </div>
+  </details>
+
+  <details>
+    <summary><div class="sec-h">配置 · 凭证</div></summary>
+    <div class="grid3">
+      <div class="panel"><div class="body">
+        <div class="sec-h" style="margin-bottom:12px">飞书</div>
+        <div class="row"><label>app_id</label><input id="fs_app_id"></div>
+        <div class="row"><label>app_secret</label>
+          <div class="pw"><input id="fs_app_secret" type="password"><button onclick="eye('fs_app_secret',this)">显示</button></div></div>
+        <div class="row"><label>app_token（表格 ID）</label><input id="fs_app_token">
+          <div class="hint">多维表格地址栏 /base/【这段】</div></div>
+      </div></div>
+      <div class="panel"><div class="body">
+        <div class="sec-h" style="margin-bottom:12px">DeepSeek</div>
+        <div class="row"><label>api_key</label>
+          <div class="pw"><input id="ds_api_key" type="password"><button onclick="eye('ds_api_key',this)">显示</button></div></div>
+        <div class="row"><label>base_url</label><input id="ds_base_url"></div>
+        <div class="row"><label>model</label><input id="ds_model"></div>
+      </div></div>
+      <div class="panel"><div class="body">
+        <div class="sec-h" style="margin-bottom:12px">飞星</div>
+        <div class="row"><label>api_key</label>
+          <div class="pw"><input id="fx_api_key" type="password"><button onclick="eye('fx_api_key',this)">显示</button></div></div>
+        <div class="row"><label>team_id</label><input id="fx_team_id"></div>
+        <div class="hint">续费后在此更新 api_key，保存后点上方「测试并列出账号」验证。</div>
+      </div></div>
+    </div>
+  </details>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+let META = [];
+
+function toast(msg, ok=true){
+  const t = document.getElementById('toast');
+  t.style.borderLeftColor = ok ? 'var(--green)' : 'var(--red)';
+  t.style.borderColor = ok ? 'var(--green)' : 'var(--red)';
+  t.textContent = msg; t.style.display='block';
+  clearTimeout(t._h); t._h = setTimeout(()=>t.style.display='none', 8000);
+}
+function eye(id, btn){
+  const e=document.getElementById(id);
+  const show = e.type==='password';
+  e.type = show ? 'text' : 'password';
+  btn.textContent = show ? '隐藏' : '显示';
+}
+async function jget(u){return (await fetch(u)).json()}
+async function jpost(u,b){return (await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)})).json()}
+
+async function load(){
+  const d = await jget('/api/config');
+  META = d.meta;
+  const pathKeys = ['background_dir','output_dir','audio_dir','icon_dir'];
+  const paths = document.getElementById('paths'), params = document.getElementById('params');
+  paths.innerHTML=''; params.innerHTML='';
+  for(const [k,label,typ,hint] of d.meta){
+    const box = pathKeys.includes(k) ? paths : params;
+    const wrap = document.createElement('div'); wrap.className='row';
+    wrap.innerHTML = `<label>${label}</label><input id="cfg_${k}"><div class="hint">${hint||''}</div>`;
+    box.appendChild(wrap);
+    wrap.querySelector('input').value = d.fields[k] ?? '';
+  }
+  const c = d.creds;
+  const set=(id,v)=>{const e=document.getElementById(id); if(e) e.value=v??''};
+  set('fs_app_id',c.feishu.app_id); set('fs_app_secret',c.feishu.app_secret);
+  set('fs_app_token',c.feishu.app_token);
+  set('ds_api_key',c.deepseek.api_key); set('ds_base_url',c.deepseek.base_url); set('ds_model',c.deepseek.model);
+  set('fx_api_key',c.feixing.api_key); set('fx_team_id',c.feixing.team_id);
+  loadStatus();
+}
+
+async function saveAll(){
+  const fields={};
+  for(const [k] of META){const e=document.getElementById('cfg_'+k); if(e) fields[k]=e.value}
+  const v=id=>document.getElementById(id).value;
+  const creds={
+    feishu:{app_id:v('fs_app_id'),app_secret:v('fs_app_secret'),app_token:v('fs_app_token')},
+    deepseek:{api_key:v('ds_api_key'),base_url:v('ds_base_url'),model:v('ds_model')},
+    feixing:{api_key:v('fx_api_key'),team_id:v('fx_team_id')},
+  };
+  const r=await jpost('/api/save',{fields,creds});
+  toast(r.msg||'已保存', r.ok!==false);
+}
+
+/* 测连接：结果常驻为状态灯，不再一闪而过 */
+function svc(which, cls, text){
+  const d=document.getElementById('dot_'+which), s=document.getElementById('st_'+which);
+  if(d) d.className='d'+(cls?' '+cls:'');
+  if(s){ s.className='s'+(cls?' '+cls:''); s.textContent=text; s.title=text; }
+}
+async function test(which){
+  svc(which,'run','测试中…');
+  try{
+    const r=await jpost('/api/test',{which});
+    svc(which, r.ok?'ok':'bad', (r.ok?'✓ ':'✗ ')+(r.msg||'').split('\n')[0].slice(0,120));
+    toast(r.msg, r.ok);
+  }catch(e){ svc(which,'bad','✗ 请求失败'); toast('请求失败: '+e,false); }
+}
+
+/* 手动操作：运行期间锁按钮 + 计时，杜绝重复点击 */
+let running=false;
+async function act(what){
+  if(running) return;
+  if(!confirm(what==='generate'?'确定立即生成?可能需要 30–60 分钟':'确定立即发布?')) return;
+  running=true;
+  const bg=document.getElementById('btn_generate'), bp=document.getElementById('btn_publish');
+  const me = what==='generate'?bg:bp;
+  const label = me.textContent;
+  bg.disabled=true; bp.disabled=true;
+  const t0=Date.now();
+  const note=document.getElementById('runnote');
+  const tick=setInterval(()=>{
+    const s=Math.floor((Date.now()-t0)/1000);
+    const mm=String(Math.floor(s/60)).padStart(2,'0'), ss=String(s%60).padStart(2,'0');
+    me.textContent=`● 运行中 ${mm}:${ss}`;
+    note.textContent=`${what==='generate'?'生成':'发布'}进行中，请勿关闭本页与后台窗口…`;
+  },1000);
+  try{
+    const r=await jpost('/api/action',{what});
+    toast(r.msg, r.ok);
+    note.textContent=(r.ok?'✓ ':'✗ ')+(r.msg||'').split('\n')[0].slice(0,160);
+  }catch(e){ toast('运行失败: '+e,false); note.textContent='✗ 运行失败: '+e; }
+  finally{
+    clearInterval(tick); me.textContent=label;
+    bg.disabled=false; bp.disabled=false; running=false; loadStatus();
+  }
+}
+
+async function loadStatus(){
+  const el=document.getElementById('status');
+  const s=await jget('/api/status');
+  if(!s.ok){
+    el.innerHTML=`<div class="cell"><div class="n sm" style="color:var(--red)">读取失败: ${s.msg||''}</div><div class="k">状态</div></div>`;
+    return;
+  }
+  const det=Object.entries(s.today_detail||{}).map(([k,v])=>`${k} ${v}`).join('   ')||'—';
+  el.innerHTML=`
+    <div class="cell"><div class="n">${s.pending}</div><div class="k">池子待发</div></div>
+    <div class="cell"><div class="n">${s.today_pub}</div><div class="k">今日已发</div></div>
+    <div class="cell"><div class="n">${s.accounts}</div><div class="k">活跃账号</div></div>
+    <div class="cell"><div class="n sm">${det}</div><div class="k">今日状态明细</div></div>`;
+}
+
+load();
+</script>
+</body>
+</html>

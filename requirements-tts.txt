@@ -1,0 +1,7 @@
+# 可选：XTTS-v2 声音克隆配音。
+# TTS 依赖 torch，模型约 2GB，建议单独建 Python 3.11 虚拟环境（项目里的 .ttsenv311），
+# 不要装进主环境，也不要放进 CI / Docker 基础镜像。
+-r requirements.txt
+TTS>=0.22,<0.23
+torch>=2.3,<3
+torchaudio>=2.3,<3

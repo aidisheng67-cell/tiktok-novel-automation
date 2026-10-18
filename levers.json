@@ -1,0 +1,23 @@
+{
+  "active_lever": "hook_type",
+  "levers": {
+    "hook_type": {
+      "column": "hook_type",
+      "metric": "auto",
+      "status": "active",
+      "champion": null,
+      "min_n": 4,
+      "explore_ratio": 0.3,
+      "exploit_topk": 3
+    },
+    "opening_type": {
+      "column": "opening_type",
+      "metric": "completion",
+      "status": "pending",
+      "champion": null,
+      "min_n": 4,
+      "explore_ratio": 0.3,
+      "exploit_topk": 3
+    }
+  }
+}

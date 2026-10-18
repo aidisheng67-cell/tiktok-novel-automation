@@ -1,0 +1,4 @@
+# 可选：本地语音转写（生成逐词字幕）。
+# 不装也能出片，流水线会自动跳过字幕；模型首次运行才下载，约 500MB（small）。
+-r requirements.txt
+faster-whisper>=1.1,<2

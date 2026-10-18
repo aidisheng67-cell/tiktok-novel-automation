@@ -1,0 +1,46 @@
+# 本地配置与凭证（真实密钥绝不入库）
+config.json
+deepseek.json
+feishu.json
+feixing.json
+.env
+
+# 运行数据
+state.db
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+logs/
+work/
+_work/
+_demo/
+output/
+input/
+models/
+assets/
+tools/
+
+# TTS / Whisper 独立环境
+.ttsenv*/
+venv/
+.venv/
+
+# 临时与打包产物
+__pycache__/
+*.py[cod]
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# 日志
+*.log
