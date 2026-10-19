@@ -1,0 +1,6 @@
+{
+  "app_id": "cli_请替换为你的AppID",
+  "app_secret": "请替换为你的AppSecret",
+  "app_token": "请替换为你的多维表格app_token",
+  "base_url": "https://open.feishu.cn"
+}

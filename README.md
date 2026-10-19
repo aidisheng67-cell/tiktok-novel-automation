@@ -76,14 +76,73 @@ python demo.py
   demo_us_02: 2 条
 ```
 
+## 3 分钟填 Key
+
+仓库里只有 `*.example.*` 模板，没有任何真实凭证。第一次跑真实接口时，任选一种方式。
+
+### 方式 A：本地 JSON（本机运行推荐）
+
+```bash
+cp deepseek.example.json deepseek.json
+cp feishu.example.json feishu.json
+cp feixing.example.json feixing.json
+```
+
+打开三个文件，把中文占位值换成自己的：
+
+| 文件 | 必填字段 | 从哪里拿 |
+| --- | --- | --- |
+| `deepseek.json` | `api_key` | [DeepSeek 控制台](https://platform.deepseek.com/api_keys) → API Keys |
+| `feishu.json` | `app_id` / `app_secret` / `app_token` | [飞书开放平台](https://open.feishu.cn/app) → 应用凭证；`app_token` 在多维表格 URL 中 |
+| `feixing.json` | `api_key` / `team_id` | 飞星 UPMee 后台 |
+
+只跑某一步就只填对应文件，不用的可以删掉。优先级仍然是：**环境变量 > 本地 JSON > 默认值**。
+
+### 方式 B：环境变量（Docker / CI / 服务器推荐）
+
+```bash
+cp .env.example .env
+```
+
+Docker Compose 会自动读取 `.env`；本地直接运行 `python ...` 不会，需要先手动设置环境变量，例如 PowerShell：
+
+```powershell
+$env:DEEPSEEK_API_KEY="sk-..."
+python rewrite.py test
+```
+
+也可以写进系统环境变量或 CI Secrets。
+
+### 最小填写组合
+
+| 你要做的事 | 最少需要 |
+| --- | --- |
+| 离线演示 `python demo.py` | 不需要任何 Key |
+| AI 改文 | `DEEPSEEK_API_KEY` 或 `deepseek.json` |
+| 同步飞书表格 | 飞书三项：`app_id` / `app_secret` / `app_token` |
+| 发布到飞星 | 飞星两项：`api_key` / `team_id` |
+
+填完先验证：
+
+```bash
+python demo.py          # 不需要 Key
+python rewrite.py test  # 会真实调用一次 DeepSeek，可能产生少量费用
+```
+
+看到改文样例输出，说明 Key 已生效。若报 401/403，优先检查 Key 是否复制完整、是否已过期。
+
 ## 真实运行
 
-1. 复制配置模板：
+1. 复制配置模板，并按「3 分钟填 Key」填入自己的凭证：
 
    ```bash
    cp config.example.json config.json
-   cp .env.example .env        # 填入三组凭证
+   cp deepseek.example.json deepseek.json
+   cp feishu.example.json feishu.json
+   cp feixing.example.json feixing.json
    ```
+
+   只跑离线演示不需要这一步。
 
 2. 准备运行环境：
 
@@ -108,11 +167,11 @@ python demo.py
 
 凭证优先级：**环境变量 > 本地 JSON > 默认值**。
 
-| 凭证 | 环境变量 | 本地文件（已 gitignore） |
-| --- | --- | --- |
-| DeepSeek | `DEEPSEEK_API_KEY` / `DEEPSEEK_BASE_URL` / `DEEPSEEK_MODEL` | `deepseek.json` |
-| 飞书 | `FEISHU_APP_ID` / `FEISHU_APP_SECRET` / `FEISHU_APP_TOKEN` | `feishu.json` |
-| 飞星 | `FEIXING_API_KEY` / `FEIXING_TEAM_ID` | `feixing.json` |
+| 凭证 | 环境变量 | 本地文件（已 gitignore） | 模板 |
+| --- | --- | --- | --- |
+| DeepSeek | `DEEPSEEK_API_KEY` / `DEEPSEEK_BASE_URL` / `DEEPSEEK_MODEL` | `deepseek.json` | `deepseek.example.json` |
+| 飞书 | `FEISHU_APP_ID` / `FEISHU_APP_SECRET` / `FEISHU_APP_TOKEN` | `feishu.json` | `feishu.example.json` |
+| 飞星 | `FEIXING_API_KEY` / `FEIXING_TEAM_ID` | `feixing.json` | `feixing.example.json` |
 
 路径类配置可用 `NOVEL_CONFIG`、`NOVEL_DB`、`NOVEL_AUDIO_DIR`、`NOVEL_BACKGROUND_DIR`、`NOVEL_OUTPUT_DIR`、`NOVEL_ICON_DIR`、`NOVEL_FONT_FILE` 覆盖，便于容器化部署。
 
@@ -177,6 +236,11 @@ docker compose run --rm app python schedule_cli.py run --limit 1
 ├── generate.py            # 每日生成
 ├── console.py             # 本机控制台
 ├── demo.py                # 离线演示
+├── config.example.json    # 非敏感运行参数模板
+├── deepseek.example.json  # 凭证模板
+├── feishu.example.json
+├── feixing.example.json
+├── .env.example
 ├── tests/                 # pytest
 ├── Dockerfile
 └── .github/workflows/ci.yml

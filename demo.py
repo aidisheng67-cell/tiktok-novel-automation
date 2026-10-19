@@ -126,7 +126,7 @@ def main() -> int:
     print(f"  credentials.redact_text('...&token=abc123') -> "
           f"{credentials.redact_text('https://example.com/cb?token=abc123')}")
 
-    print("\n演示完成。真实运行请先配置 .env，并准备 ffmpeg / 字体 / 素材。")
+    print("\n演示完成。真实运行请先复制 *.example.json 填入自己的 Key，并准备 ffmpeg / 字体 / 素材。")
     return 0
 
 
