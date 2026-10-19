@@ -3,6 +3,12 @@
 把「选题 → AI 改文 → 克隆配音 → 字幕 → 成片 → 去重 → 排期 → 发布 → 数据回填」串成一条可重复运行的流水线，让少量运营人员也能稳定管理大量海外 TikTok 账号。
 
 > 这是作品集用的**净化版**仓库：只保留源码与工程配置。真实业务数据、账号凭证、素材、模型、成品视频和日志均已移除。
+>
+> 许可证：[MIT](LICENSE)，可自由使用、修改、分发和商用，保留版权声明即可。
+
+![离线演示](docs/demo.gif)
+
+*离线演示：`python demo.py`，不需要任何 API Key。*
 
 ## 它解决什么问题
 
@@ -236,6 +242,7 @@ docker compose run --rm app python schedule_cli.py run --limit 1
 ├── generate.py            # 每日生成
 ├── console.py             # 本机控制台
 ├── demo.py                # 离线演示
+├── docs/demo.gif          # 离线演示 GIF
 ├── config.example.json    # 非敏感运行参数模板
 ├── deepseek.example.json  # 凭证模板
 ├── feishu.example.json
@@ -272,4 +279,6 @@ docker compose run --rm app python schedule_cli.py run --limit 1
 
 ## License
 
-暂未附许可证。如需复用代码，请先联系作者。
+本项目采用 [MIT License](LICENSE)。
+
+你可以自由使用、修改、分发和商用，只需保留版权声明与许可证声明。代码按“现状”提供，不附带任何担保。
